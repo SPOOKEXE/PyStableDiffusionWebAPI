@@ -99,6 +99,58 @@ def unload_checkpoint( ) -> None:
 def get_txt2img_scripts( ) -> list:
 	return requests.get(f'http://127.0.0.1:7860/sdapi/v1/scripts')['txt2img']
 
+def set_prompt_options( options : dict ) -> None:
+	return requests.post('http://127.0.0.1:7860/sdapi/v1/options', json=options)
+
+def get_prompt_options( ) -> dict:
+	return requests.get('http://127.0.0.1:7860/sdapi/v1/options')
+
+def update_prompt_options( options : dict ) -> None:
+	values = get_prompt_options( )
+	values.update(options)
+	set_prompt_options( values )
+
+def txt2img(
+	checkpoint : str = "v1-5-pruned-emaonly.safetensors [6ce0161689]",
+	checkpoint_vae : str = None,
+	# embeddings : list[tuple] = None,
+	# hypernetworks : list[tuple] = None,
+	# loras : list[tuple] = None,
+
+	prompt : str = "",
+	negative_prompt : str = "",
+
+	steps : int = 25,
+	cfg_scale : int = 7,
+	sampler_name : str = "Euler a",
+	width : str = 512,
+	height : str = 512,
+
+	batch_size : int = 1,
+	batch_count : int = 1,
+	seed : int = -1,
+) -> dict:
+
+	# change models / vae
+	update_prompt_options({
+		'sd_model_checkpoint': checkpoint,
+		'sd_vae' : checkpoint_vae
+	})
+
+	# run txt2img
+	return requests.post(f"http://127.0.0.1:7860/sdapi/v1/txt2img", json={
+		"prompt" : prompt,
+		"negative_prompt" : negative_prompt,
+		"steps" : steps,
+		"seed" : seed,
+		"sampler_name" : sampler_name,
+		"batch_size" : batch_size,
+		"n_iter" : batch_count,
+		"cfg_scale" : cfg_scale,
+		"width" : width,
+		"height" : height
+	})
+
 # TODO:
 # http://127.0.0.1:7860/docs#/default/text2imgapi_sdapi_v1_txt2img_post
 # /sdapi/v1/png-info
@@ -106,13 +158,20 @@ def get_txt2img_scripts( ) -> list:
 # /sdapi/v1/interrupt
 # /sdapi/v1/skip
 # /sdapi/v1/txt2img
+# /queue/status
+# /internal/ping
 
-if __name__ == '__main__':
+# <lora:NAME:WEIGHT>
+# <hypernetwork:NAME:WEIGHT>
 
-	data = get_models()
-	with open("info.json", "w") as file:
-		file.write( json.dumps(data, indent=4) )
+# if __name__ == '__main__':
 
+	# 1
+	# data = get_models()
+	# with open("info.json", "w") as file:
+	# 	file.write( json.dumps(data, indent=4) )
+
+	# 2
 	# data = txt2img( "pug", steps=25 )
 	# with open("info.json", "w") as file:
 	# 	file.write( json.dumps(data, indent=4) )
