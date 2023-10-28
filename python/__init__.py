@@ -103,7 +103,7 @@ def set_prompt_options( options : dict ) -> None:
 	return requests.post('http://127.0.0.1:7860/sdapi/v1/options', json=options)
 
 def get_prompt_options( ) -> dict:
-	return requests.get('http://127.0.0.1:7860/sdapi/v1/options')
+	return requests.get('http://127.0.0.1:7860/sdapi/v1/options').json()
 
 def update_prompt_options( options : dict ) -> None:
 	values = get_prompt_options( )
